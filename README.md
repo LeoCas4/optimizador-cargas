@@ -24,14 +24,14 @@ Lee las tarifas y calificaciones del archivo `Tarifas.xlsx` y se usa desde el na
 ## 1. Instalar Python (desde cero)
 
 El programa necesita **Python 3.9 o más reciente**. Solo se instala una vez.
-Sigue los pasos de tu sistema: [Windows](#-windows) o [Mac](#-mac).
+Sigue los pasos de tu sistema: [Windows](#windows) o [Mac](#mac).
 
-### 🪟 Windows
+### Windows
 
 1. Entra a **https://www.python.org/downloads/** y haz clic en el botón amarillo **Download Python 3.x**.
 2. Abre el archivo descargado (`python-3.x.x-amd64.exe`).
 3. **MUY IMPORTANTE:** en la primera pantalla del instalador marca la casilla
-   **☑ Add python.exe to PATH** (está abajo).
+   **Add python.exe to PATH** (está abajo).
 4. Haz clic en **Install Now** y espera a que termine. Al final haz clic en **Close**.
 5. Comprueba la instalación:
    - Presiona la tecla **Windows**, escribe `cmd` y presiona **Enter**.
@@ -39,13 +39,13 @@ Sigue los pasos de tu sistema: [Windows](#-windows) o [Mac](#-mac).
      ```
      py --version
      ```
-   - Debe aparecer algo como `Python 3.13.1`. ✅
+   - Debe aparecer algo como `Python 3.13.1`.
 
 > **Si ves el mensaje "no se encontró Python; ejecutar sin argumentos para instalar desde el Microsoft Store…"**
 > usa `py` en lugar de `python` en todos los comandos. Ese aviso sale porque Windows tiene un acceso directo a la Microsoft Store.
 > Si quieres desactivarlo: **Configuración → Aplicaciones → Configuración avanzada de aplicaciones → Alias de ejecución de aplicaciones** y apaga **python.exe** y **python3.exe**.
 
-### 🍎 Mac
+### Mac
 
 1. Entra a **https://www.python.org/downloads/** y haz clic en **Download Python 3.x**.
    La página detecta que usas Mac y descarga el instalador `python-3.x.x-macos11.pkg`. Sirve para Mac con chip Intel y con chip Apple (M1, M2, M3, M4).
@@ -56,12 +56,12 @@ Sigue los pasos de tu sistema: [Windows](#-windows) o [Mac](#-mac).
    Se abre una ventana de Terminal, hace la configuración sola y la puedes cerrar cuando diga `process completed`.
    (Esto permite que Python descargue la librería que usa el programa.)
 5. Comprueba la instalación:
-   - Presiona **Cmd (⌘) + Espacio**, escribe `Terminal` y presiona **Enter**.
+   - Presiona **Cmd + Espacio**, escribe `Terminal` y presiona **Enter**.
    - En la Terminal escribe lo siguiente y presiona Enter:
      ```
      python3 --version
      ```
-   - Debe aparecer algo como `Python 3.13.1`. ✅
+   - Debe aparecer algo como `Python 3.13.1`.
 
 > **En Mac siempre se usa `python3`** (no `python`).
 >
@@ -87,7 +87,7 @@ git clone https://github.com/LeoCas4/optimizador-cargas.git
 
 ## 3. Abrir el programa
 
-### 🪟 Windows: doble clic (recomendado)
+### Windows: doble clic (recomendado)
 
 1. Entra a la carpeta del programa.
 2. Haz **doble clic** en **`Abrir Optimizador.bat`**.
@@ -97,7 +97,7 @@ git clone https://github.com/LeoCas4/optimizador-cargas.git
 
 > Si Windows muestra "Windows protegió su PC", haz clic en **Más información → Ejecutar de todas formas**.
 
-### 🪟 Windows: con comandos (alternativa)
+### Windows: con comandos (alternativa)
 
 1. Abre la carpeta del programa en el Explorador de archivos.
 2. Haz clic en la barra de direcciones (arriba), escribe `cmd` y presiona **Enter**. Se abre una ventana negra ya ubicada en la carpeta.
@@ -110,7 +110,7 @@ git clone https://github.com/LeoCas4/optimizador-cargas.git
    py app_web.py
    ```
 
-### 🍎 Mac: doble clic (recomendado)
+### Mac: doble clic (recomendado)
 
 1. Entra a la carpeta del programa.
 2. **La primera vez:** haz **clic derecho** (o Control + clic) sobre **`Abrir Optimizador.command`** → **Abrir** → en el aviso vuelve a hacer clic en **Abrir**.
@@ -126,9 +126,9 @@ git clone https://github.com/LeoCas4/optimizador-cargas.git
 > Si dice **"no tienes permiso"** o el archivo se abre en un editor de texto, sigue los pasos "con comandos" de abajo.
 > Una vez dentro de la carpeta en la Terminal, también puedes repararlo con `chmod +x "Abrir Optimizador.command"`.
 
-### 🍎 Mac: con comandos (alternativa)
+### Mac: con comandos (alternativa)
 
-1. Abre **Terminal** (Cmd ⌘ + Espacio → escribe `Terminal` → Enter).
+1. Abre **Terminal** (Cmd + Espacio → escribe `Terminal` → Enter).
 2. Escribe `cd` seguido de **un espacio**, luego **arrastra la carpeta del programa** desde el Finder hasta la ventana de Terminal y presiona **Enter**.
    Debe verse algo así:
    ```
