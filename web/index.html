@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimizador de Cargas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:ital,wdth,wght@1,125,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #fff7f2;
+    --border: #f1dfd3;
+    --text: #1f1a17;
+    --muted: #7a6d65;
+    --primary: #f26424;
+    --primary-dark: #d4501a;
+    --primary-soft: #fde9de;
+    --primary-ink: #ffffff;
+    --accent: #f26424;
+    --good: #14975b;
+    --good-soft: #e3f6ec;
+    --warn: #c62828;
+    --warn-soft: #fde4e4;
+    --star: #f26424;
+    --shadow: 0 1px 2px rgba(60,30,10,.05), 0 6px 20px rgba(242,100,36,.08);
+    --radius: 14px;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+
+  /* ---------- Header ---------- */
+  .hero { background: #fff; padding: 22px 16px 0; }
+  .hero-inner { max-width: 1180px; margin: 0 auto; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-bottom: 18px; }
+  .brand { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .brand img { height: 46px; width: auto; display: block; }
+  .brand-divider { width: 2px; height: 44px; background: var(--border); }
+  .brand h1 {
+    margin: 0; font-family: Archivo, "Arial Black", Impact, sans-serif; font-style: italic;
+    font-weight: 900; font-stretch: 125%; font-size: 26px; letter-spacing: -.01em;
+    text-transform: uppercase; color: var(--primary); line-height: 1;
+  }
+  .brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+  .stripe { max-width: 1180px; margin: 0 auto; height: 12px; background: var(--primary); transform: skewX(-20deg); position: relative; }
+  .stripe::after { content: ""; position: absolute; left: 34%; top: -9px; border-left: 14px solid transparent; border-bottom: 10px solid var(--primary); border-right: 0 solid transparent; }
+  .file-pill { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 999px; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+  .file-pill button { background: none; border: 0; color: var(--primary); cursor: pointer; text-decoration: underline; padding: 0; font-size: 13px; font-weight: 600; }
+  @media (max-width: 600px) { .brand-divider { display: none; } .brand img { height: 34px; } .brand h1 { font-size: 20px; } }
+
+  .wrap { max-width: 1180px; margin: 26px auto 40px; padding: 0 16px; display: grid; gap: 18px; }
+  .wrap > * { min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card-pad { padding: 20px; }
+  .section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; flex-wrap: wrap; }
+  .section-title h2 { margin: 0; font-size: 17px; font-weight: 700; }
+  .step { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: var(--primary-ink); font-size: 12px; font-weight: 700; margin-right: 8px; vertical-align: 1px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+
+  /* ---------- Config ---------- */
+  .config { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+  @media (max-width: 860px) { .config { grid-template-columns: 1fr; } }
+  .label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+  .segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 11px; padding: 4px; gap: 4px; flex-wrap: wrap; }
+  .segmented button { border: 0; background: transparent; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--muted); }
+  .segmented button.on { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgba(60,30,10,.14); }
+  .segmented.tipo button.on { background: var(--primary); color: var(--primary-ink); }
+
+  .carriers { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+  .stars { color: var(--star); letter-spacing: 1px; font-size: 13px; white-space: nowrap; }
+  .stars .off { color: #e8d9cf; }
+
+  .slider-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .slider-labels { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+  .slider-labels span:first-child { color: var(--text); }
+  .slider-labels span:last-child { color: var(--primary); }
+  input[type=range] { width: 100%; accent-color: var(--primary); }
+
+  /* ---------- Loads ---------- */
+  .loads { display: grid; gap: 14px; }
+  .load { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); padding: 16px; }
+  .load-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .load-head strong { font-size: 15px; }
+  .icon-btn { border: 1px solid var(--border); background: var(--surface); border-radius: 9px; width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer; color: var(--muted); }
+  .icon-btn:hover { color: var(--warn); border-color: var(--warn); }
+  .load-grid { display: grid; grid-template-columns: minmax(200px, 1.5fr) auto 150px; gap: 14px; align-items: end; }
+  @media (max-width: 760px) { .load-grid { grid-template-columns: 1fr; } }
+  select, input[type=number] {
+    width: 100%; height: 42px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); outline: none;
+  }
+  select:focus, input[type=number]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+  .stepper { display: flex; height: 42px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .stepper button { width: 38px; border: 0; background: transparent; cursor: pointer; font-size: 18px; color: var(--muted); }
+  .stepper button:hover { background: var(--surface-2); color: var(--text); }
+  .stepper input { border: 0; height: 100%; text-align: center; border-radius: 0; padding: 0; -moz-appearance: textfield; }
+  .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .hazmat { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; font-weight: 600; cursor: pointer; user-select: none; }
+  .hazmat input { width: 18px; height: 18px; accent-color: var(--warn); }
+
+  .lines-title { margin: 16px 0 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .lines-title .link { background: none; border: 0; color: var(--primary); cursor: pointer; font-weight: 600; font-size: 13px; padding: 0; }
+  .lines { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+  .line {
+    position: relative; border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface);
+    padding: 12px 12px 12px 42px; cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  }
+  .line:hover { border-color: var(--primary); }
+  .line.on { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+  .check { position: absolute; left: 12px; top: 13px; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--border); display: grid; place-items: center; background: var(--surface); }
+  .line.on .check { background: var(--primary); border-color: var(--primary); }
+  .check svg { opacity: 0; }
+  .line.on .check svg { opacity: 1; }
+  .line-name { font-weight: 700; font-size: 14px; }
+  .line-cost { font-size: 18px; font-weight: 800; margin-top: 2px; letter-spacing: -.01em; }
+  .line-cost small { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+  .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: var(--primary-soft); color: var(--primary); }
+  .tag.hz { background: var(--warn-soft); color: var(--warn); }
+  .cap { margin-top: 10px; display: none; }
+  .line.on .cap { display: block; }
+  .cap label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .cap input { height: 34px; }
+  .empty-lines { padding: 14px; border: 1px dashed var(--border); border-radius: 10px; color: var(--muted); font-size: 14px; }
+
+  .actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+  .btn { border: 1px solid var(--border); background: var(--surface); padding: 11px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+  .btn:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); padding: 12px 22px; font-size: 15px; }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: var(--primary-ink); }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .error { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 14px; font-weight: 600; font-size: 14px; margin-top: 12px; }
+
+  /* ---------- Results ---------- */
+  .results.stale { opacity: .55; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  @media (max-width: 860px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .kpi:first-child { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .kpi:first-child .label { color: rgba(255,255,255,.85); }
+  .kpi .v { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+  .kpi.warn { background: var(--warn-soft); border-color: transparent; }
+  .kpi.warn .v { color: var(--warn); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--surface-2); padding: 10px 14px; white-space: nowrap; }
+  td { padding: 12px 14px; border-top: 1px solid var(--border); white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tfoot td { font-weight: 800; background: var(--surface-2); }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: var(--primary-soft); color: var(--primary); }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+
+  .compare { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; margin-top: 18px; }
+  @media (max-width: 420px) { .compare { grid-template-columns: 1fr; } }
+  .cmp { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: var(--surface-2); }
+  .cmp h3 { margin: 0; font-size: 15px; }
+  .cmp .sub { font-size: 13px; color: var(--muted); margin: 2px 0 12px; }
+  .bar-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 8px 0; border-top: 1px solid var(--border); }
+  .bar-row:first-of-type { border-top: 0; }
+  .bar-name { font-weight: 700; font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .bar-val { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .bar { grid-column: 1 / -1; height: 8px; border-radius: 99px; background: var(--border); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 99px; background: #c9bdb5; }
+  .bar-row.best .bar i { background: var(--primary); }
+  .bar-meta { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .placeholder { text-align: center; padding: 36px 16px; color: var(--muted); }
+  .placeholder svg { opacity: .5; margin-bottom: 8px; }
+  .formula { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media print {
+    .file-pill, #configCard, #loadsCard, .no-print { display: none !important; }
+    .wrap { margin: 0; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="brand">
+      <img src="/logo.png" alt="Schneider">
+      <span class="brand-divider"></span>
+      <div>
+        <h1>Optimizador de Cargas</h1>
+        <p>Elige la mejor línea transportista por costo y calificación</p>
+      </div>
+    </div>
+    <div class="file-pill" id="filePill">Cargando tarifas…</div>
+  </div>
+  <div class="stripe"></div>
+</header>
+
+<main class="wrap">
+  <!-- 1. Configuración -->
+  <section class="card card-pad" id="configCard">
+    <div class="section-title"><h2><span class="step">1</span>Plaza y prioridad</h2></div>
+    <div class="config">
+      <div>
+        <div class="label">Plaza</div>
+        <div class="segmented" id="plazaSeg"></div>
+        <div class="carriers" id="carrierChips"></div>
+      </div>
+      <div>
+        <div class="label">Prioridad de la eficiencia</div>
+        <div class="slider-box">
+          <div class="slider-labels"><span id="lblCosto">Costo 50%</span><span id="lblCalif">Calificación 50%</span></div>
+          <input type="range" id="peso" min="0" max="100" step="5" value="50" aria-label="Peso del costo">
+          <div class="small muted" style="margin-top:6px">Mueve a la izquierda para priorizar costo y a la derecha para priorizar calificación.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Cargas -->
+  <section class="card card-pad" id="loadsCard">
+    <div class="section-title">
+      <h2><span class="step">2</span>Cargas disponibles</h2>
+      <span class="small muted">Los accesoriales se incluyen automáticamente</span>
+    </div>
+    <div class="loads" id="loads"></div>
+    <div class="actions">
+      <button class="btn" id="addLoad">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar carga
+      </button>
+      <button class="btn btn-primary" id="calc">Calcular recomendación</button>
+    </div>
+    <div class="error" id="error" hidden></div>
+  </section>
+
+  <!-- 3. Resultados -->
+  <section class="card card-pad results" id="results">
+    <div class="section-title">
+      <h2><span class="step">3</span>Recomendación</h2>
+      <button class="btn no-print" id="printBtn" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        Imprimir / PDF
+      </button>
+    </div>
+    <div id="resultsBody">
+      <div class="placeholder">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        <div>Captura tus cargas y presiona <b>Calcular recomendación</b>.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money = n => '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const TIPOS = [['IMPO', 'IMPO'], ['EXPO', 'EXPO'], ['TOURING', 'Ambos (Touring)']];
+  const CHECK = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+  const TRASH = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
+
+  const state = { data: null, plaza: null, cargas: [], peso: 50, nextId: 1, hasResult: false };
+
+  function stars(v) {
+    const full = Math.round(v);
+    return `<span class="stars" title="${v} de 5">${'★'.repeat(full)}<span class="off">${'★'.repeat(5 - full)}</span></span>`;
+  }
+
+  function nuevaCarga() {
+    return { id: state.nextId++, ruta: '', tipo: 'TOURING', cantidad: 1, hazmat: false, lineas: {} };
+  }
+
+  function plazaData() { return state.data.plazas[state.plaza]; }
+
+  function cotizaciones(c) {
+    const r = plazaData().rutas[c.ruta];
+    if (!r) return [];
+    return r.cotizaciones[`${c.tipo}|${c.hazmat && r.hazmat ? 1 : 0}`] || [];
+  }
+
+  /* ---------------- Render: plaza ---------------- */
+  function renderPlaza() {
+    const seg = $('#plazaSeg');
+    seg.innerHTML = Object.keys(state.data.plazas).map(p =>
+      `<button data-p="${esc(p)}" class="${p === state.plaza ? 'on' : ''}">${esc(p)}</button>`).join('');
+    $('#carrierChips').innerHTML = plazaData().lineas.map(l =>
+      `<span class="chip">${esc(l.nombre)} ${stars(l.calif)} <span class="muted">${l.calif.toFixed(1)}</span></span>`).join('');
+  }
+
+  /* ---------------- Render: cargas ---------------- */
+  function renderCargas() {
+    const rutas = Object.entries(plazaData().rutas);
+    $('#loads').innerHTML = state.cargas.map((c, i) => {
+      const r = plazaData().rutas[c.ruta];
+      const cot = cotizaciones(c);
+      const linesHtml = !c.ruta
+        ? `<div class="empty-lines">Elige una ruta para ver las líneas que la cotizan.</div>`
+        : !cot.length
+          ? `<div class="empty-lines">Ninguna línea cotiza esta ruta con este tipo.</div>`
+          : `<div class="lines">${cot.map(o => {
+              const sel = Object.prototype.hasOwnProperty.call(c.lineas, o.linea);
+              const cap = sel && c.lineas[o.linea] != null ? c.lineas[o.linea] : '';
+              return `<div class="line ${sel ? 'on' : ''}" data-act="toggle" data-l="${esc(o.linea)}" role="checkbox" aria-checked="${sel}" tabindex="0">
+                <span class="check">${CHECK}</span>
+                <div class="line-name">${esc(o.linea)}</div>
+                <div>${stars(o.calif)} <span class="small muted">${o.calif.toFixed(1)}</span></div>
+                <div class="line-cost">${money(o.costo)} <small>/ carga</small></div>
+                ${o.notas.length ? `<div class="tags">${o.notas.map(n => `<span class="tag ${/HAZMAT/.test(n) ? 'hz' : ''}">${esc(n)}</span>`).join('')}</div>` : ''}
+                <div class="cap">
+                  <label>¿Cuántas cargas puede llevar?</label>
+                  <input type="number" min="0" placeholder="Todas (${c.cantidad})" value="${cap}" data-act="cap" data-l="${esc(o.linea)}">
+                </div>
+              </div>`;
+            }).join('')}</div>`;
+
+      return `<div class="load" data-id="${c.id}">
+        <div class="load-head">
+          <strong>Carga ${i + 1}</strong>
+          ${state.cargas.length > 1 ? `<button class="icon-btn" data-act="del" title="Eliminar carga" aria-label="Eliminar carga">${TRASH}</button>` : ''}
+        </div>
+        <div class="load-grid">
+          <div>
+            <div class="label">Ruta / cliente</div>
+            <select data-act="ruta">
+              <option value="">Selecciona una ruta…</option>
+              ${rutas.map(([k, v]) => `<option value="${esc(k)}" ${k === c.ruta ? 'selected' : ''}>${esc(v.nombre)}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <div class="label">Tipo</div>
+            <div class="segmented tipo">${TIPOS.map(([k, t]) =>
+              `<button data-act="tipo" data-t="${k}" class="${k === c.tipo ? 'on' : ''}">${t}</button>`).join('')}</div>
+          </div>
+          <div>
+            <div class="label">Cargas</div>
+            <div class="stepper">
+              <button data-act="menos" aria-label="Menos">−</button>
+              <input type="number" min="1" value="${c.cantidad}" data-act="cant" aria-label="Cantidad de cargas">
+              <button data-act="mas" aria-label="Más">+</button>
+            </div>
+          </div>
+        </div>
+        ${r && r.hazmat ? `<label class="hazmat"><input type="checkbox" data-act="hazmat" ${c.hazmat ? 'checked' : ''}> La carga es HAZMAT</label>` : ''}
+        <div class="lines-title">
+          <div class="label" style="margin:0">Líneas transportistas disponibles</div>
+          ${cot.length > 1 ? `<button class="link" data-act="all">${Object.keys(c.lineas).length === cot.length ? 'Quitar todas' : 'Seleccionar todas'}</button>` : ''}
+        </div>
+        ${linesHtml}
+      </div>`;
+    }).join('');
+  }
+
+  function marcarDesactualizado() {
+    if (state.hasResult) $('#results').classList.add('stale');
+  }
+
+  function limpiarLineas(c) {
+    const validas = new Set(cotizaciones(c).map(o => o.linea));
+    for (const l of Object.keys(c.lineas)) if (!validas.has(l)) delete c.lineas[l];
+  }
+
+  /* ---------------- Eventos ---------------- */
+  $('#plazaSeg').addEventListener('click', e => {
+    const b = e.target.closest('button[data-p]');
+    if (!b || b.dataset.p === state.plaza) return;
+    const capturadas = state.cargas.some(c => c.ruta);
+    if (capturadas && !confirm('Al cambiar de plaza se borran las cargas capturadas. ¿Continuar?')) return;
+    state.plaza = b.dataset.p;
+    state.cargas = [nuevaCarga()];
+    state.hasResult = false;
+    resetResults();
+    renderPlaza(); renderCargas();
+  });
+
+  $('#peso').addEventListener('input', e => {
+    state.peso = +e.target.value;
+    $('#lblCosto').textContent = `Costo ${100 - state.peso}%`;
+    $('#lblCalif').textContent = `Calificación ${state.peso}%`;
+    marcarDesactualizado();
+  });
+
+  $('#addLoad').addEventListener('click', () => {
+    state.cargas.push(nuevaCarga());
+    renderCargas();
+    const loads = document.querySelectorAll('.load');
+    loads[loads.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  const loadsEl = $('#loads');
+  function cargaDe(el) {
+    const id = +el.closest('.load').dataset.id;
+    return state.cargas.find(c => c.id === id);
+  }
+
+  loadsEl.addEventListener('click', e => {
+    const t = e.target.closest('[data-act]');
+    if (!t || t.tagName === 'INPUT' || t.tagName === 'SELECT') return;
+    const c = cargaDe(t);
+    const act = t.dataset.act;
+    if (act === 'del') state.cargas = state.cargas.filter(x => x !== c);
+    else if (act === 'tipo') { c.tipo = t.dataset.t; limpiarLineas(c); }
+    else if (act === 'mas') c.cantidad++;
+    else if (act === 'menos') c.cantidad = Math.max(1, c.cantidad - 1);
+    else if (act === 'toggle') {
+      const l = t.dataset.l;
+      if (l in c.lineas) delete c.lineas[l]; else c.lineas[l] = null;
+    } else if (act === 'all') {
+      const cot = cotizaciones(c);
+      if (Object.keys(c.lineas).length === cot.length) c.lineas = {};
+      else cot.forEach(o => { if (!(o.linea in c.lineas)) c.lineas[o.linea] = null; });
+    } else return;
+    renderCargas(); marcarDesactualizado();
+  });
+
+  loadsEl.addEventListener('keydown', e => {
+    const t = e.target.closest('.line');
+    if (t && e.target === t && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); t.click(); }
+  });
+
+  loadsEl.addEventListener('change', e => {
+    const t = e.target;
+    const c = cargaDe(t);
+    if (t.dataset.act === 'ruta') { c.ruta = t.value; c.hazmat = false; c.lineas = {}; renderCargas(); }
+    else if (t.dataset.act === 'hazmat') { c.hazmat = t.checked; renderCargas(); }
+    else if (t.dataset.act === 'cant') { c.cantidad = Math.max(1, parseInt(t.value) || 1); renderCargas(); }
+    marcarDesactualizado();
+  });
+
+  loadsEl.addEventListener('input', e => {
+    const t = e.target;
+    if (t.dataset.act !== 'cap') return;
+    const c = cargaDe(t);
+    c.lineas[t.dataset.l] = t.value === '' ? null : Math.max(0, parseInt(t.value) || 0);
+    marcarDesactualizado();
+  });
+
+  /* ---------------- Cálculo ---------------- */
+  function mostrarError(msg) {
+    const el = $('#error');
+    el.textContent = msg; el.hidden = !msg;
+  }
+
+  function resetResults() {
+    $('#results').classList.remove('stale');
+    $('#printBtn').hidden = true;
+    $('#resultsBody').innerHTML = `<div class="placeholder">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+      <div>Captura tus cargas y presiona <b>Calcular recomendación</b>.</div></div>`;
+  }
+
+  $('#calc').addEventListener('click', async () => {
+    mostrarError('');
+    for (const [i, c] of state.cargas.entries()) {
+      if (!c.ruta) return mostrarError(`Carga ${i + 1}: elige una ruta.`);
+      if (!Object.keys(c.lineas).length) return mostrarError(`Carga ${i + 1}: selecciona al menos una línea transportista disponible.`);
+    }
+    const btn = $('#calc');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Calculando…';
+    try {
+      const res = await fetch('/api/optimizar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plaza: state.plaza, peso_costo: (100 - state.peso) / 100,
+          cargas: state.cargas.map(c => ({ ruta: c.ruta, tipo: c.tipo, cantidad: c.cantidad, hazmat: c.hazmat, lineas: c.lineas })),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al calcular');
+      renderResultados(json);
+      state.hasResult = true;
+      $('#results').classList.remove('stale');
+      $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      mostrarError(err.message === 'Failed to fetch' ? 'No hay conexión con el programa. ¿Sigue abierta la ventana de app_web.py?' : err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Calcular recomendación';
+    }
+  });
+
+  function renderResultados(r) {
+    const pc = Math.round(r.peso_costo * 100);
+    const filas = r.cargas.flatMap(c => [
+      ...c.asignacion.map((a, j) => `<tr>
+        <td><b>${esc(c.ruta)}</b>${c.hazmat ? ' <span class="badge warn">HAZMAT</span>' : ''}</td>
+        <td><span class="badge">${esc(c.tipo)}</span></td>
+        <td class="num">${a.cantidad}</td>
+        <td><b>${esc(a.linea)}</b> ${j === 0 ? '<span class="badge good">Mejor opción</span>' : '<span class="badge">Siguiente mejor</span>'}</td>
+        <td>${stars(a.calif)} ${a.calif.toFixed(1)}</td>
+        <td class="num">${money(a.costo_unit)}</td>
+        <td class="num"><b>${money(a.costo_total)}</b></td>
+      </tr>`),
+      ...(c.pendientes ? [`<tr>
+        <td><b>${esc(c.ruta)}</b></td><td><span class="badge">${esc(c.tipo)}</span></td>
+        <td class="num">${c.pendientes}</td>
+        <td colspan="4"><span class="badge warn">Sin línea disponible: las líneas elegidas no alcanzan</span></td>
+      </tr>`] : []),
+    ]).join('');
+
+    const comparativos = r.cargas.map(c => `<div class="cmp">
+      <h3>${esc(c.ruta)}</h3>
+      <div class="sub">${esc(c.tipo)} · ${c.cantidad} carga${c.cantidad === 1 ? '' : 's'}${c.hazmat ? ' · HAZMAT' : ''}</div>
+      ${c.comparativo.map((o, i) => `<div class="bar-row ${i === 0 ? 'best' : ''}">
+        <div class="bar-name">${esc(o.linea)} ${i === 0 ? '<span class="badge good">Recomendada</span>' : ''}</div>
+        <div class="bar-val">${o.eficiencia.toFixed(1)}%</div>
+        <div class="bar"><i style="width:${Math.max(2, Math.min(100, o.eficiencia))}%"></i></div>
+        <div class="bar-meta"><span>${money(o.costo)} / carga</span><span>${stars(o.calif)} ${o.calif.toFixed(1)}</span>${o.capacidad != null ? `<span>Puede llevar ${o.capacidad}</span>` : ''}${o.notas.length ? `<span>${esc(o.notas.join(', '))}</span>` : ''}</div>
+      </div>`).join('')}
+    </div>`).join('');
+
+    $('#resultsBody').innerHTML = `
+      <div class="kpis">
+        <div class="kpi"><div class="label">Costo total</div><div class="v">${money(r.costo_total)}</div></div>
+        <div class="kpi"><div class="label">Cargas asignadas</div><div class="v">${r.asignadas}</div></div>
+        <div class="kpi"><div class="label">Calificación promedio</div><div class="v">${r.calif_promedio != null ? r.calif_promedio.toFixed(2) : '—'}</div></div>
+        <div class="kpi ${r.sin_asignar ? 'warn' : ''}"><div class="label">Sin asignar</div><div class="v">${r.sin_asignar}</div></div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Ruta</th><th>Tipo</th><th class="num">Cargas</th><th>Línea recomendada</th><th>Calificación</th><th class="num">Costo / carga</th><th class="num">Total</th></tr></thead>
+        <tbody>${filas}</tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="num">${r.asignadas}</td><td colspan="3"></td><td class="num">${money(r.costo_total)}</td></tr></tfoot>
+      </table></div>
+      <div class="label" style="margin-top:22px">Comparativo de eficiencia por carga</div>
+      <div class="compare">${comparativos}</div>
+      <div class="formula">Eficiencia = ${pc}% × (costo más bajo ÷ costo de la línea) + ${100 - pc}% × (calificación ÷ 5). Los accesoriales ya están incluidos en el costo.</div>`;
+    $('#printBtn').hidden = false;
+  }
+
+  $('#printBtn').addEventListener('click', () => window.print());
+
+  /* ---------------- Inicio ---------------- */
+  async function cargarDatos() {
+    try {
+      const res = await fetch('/api/datos');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      state.data = json;
+      const plazas = Object.keys(json.plazas);
+      if (!plazas.includes(state.plaza)) { state.plaza = plazas[0]; state.cargas = [nuevaCarga()]; }
+      state.cargas.forEach(limpiarLineas);
+      $('#filePill').innerHTML = `📄 ${esc(json.archivo)} <button id="reload" title="Volver a leer el Excel">Recargar</button>`;
+      $('#reload').addEventListener('click', cargarDatos);
+      renderPlaza(); renderCargas();
+    } catch (err) {
+      $('#filePill').textContent = 'Error al leer tarifas';
+      mostrarError(err.message || 'No se pudieron cargar las tarifas.');
+    }
+  }
+
+  const pc0 = 50;
+  $('#peso').value = pc0;
+  cargarDatos();
+})();
+</script>
+</body>
+</html>
