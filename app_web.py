@@ -25,7 +25,11 @@ _ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
 EXCEL = _ARGS[0] if _ARGS else os.path.join(BASE, "Tarifas.xlsx")
 PORT = int(os.environ.get("PORT", "8000"))
 INDEX = os.path.join(BASE, "web", "index.html")
-ESTATICOS = {"logo.png": "image/png"}  # archivos de la carpeta web que se pueden servir
+ESTATICOS = {  # archivos de la carpeta web que se pueden servir
+    "logo.png": "image/png",
+    "motor.js": "application/javascript; charset=utf-8",
+}
+XLSX_TIPO = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def construir_datos():
@@ -140,6 +144,10 @@ class Handler(BaseHTTPRequestHandler):
                     self._send(200, f.read(), "text/html; charset=utf-8")
             elif path == "/api/datos":
                 self._send(200, construir_datos())
+            elif path == "/Tarifas.xlsx":
+                # La página lee las tarifas directamente del Excel (motor.js)
+                with open(EXCEL, "rb") as f:
+                    self._send(200, f.read(), XLSX_TIPO)
             elif path.lstrip("/") in ESTATICOS:
                 nombre = path.lstrip("/")
                 with open(os.path.join(BASE, "web", nombre), "rb") as f:

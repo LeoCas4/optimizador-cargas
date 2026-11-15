@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Optimizador de Cargas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:ital,wdth,wght@1,125,900&display=swap" rel="stylesheet">
@@ -194,7 +195,7 @@
 <header class="hero">
   <div class="hero-inner">
     <div class="brand">
-      <img src="/logo.png" alt="Schneider">
+      <img src="logo.png" alt="Schneider">
       <span class="brand-divider"></span>
       <div>
         <h1>Optimizador de Cargas</h1>
@@ -262,6 +263,7 @@
   </section>
 </main>
 
+<script src="motor.js"></script>
 <script>
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
@@ -470,21 +472,16 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Calculando…';
     try {
-      const res = await fetch('/api/optimizar', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plaza: state.plaza, peso_costo: (100 - state.peso) / 100,
-          cargas: state.cargas.map(c => ({ ruta: c.ruta, tipo: c.tipo, cantidad: c.cantidad, hazmat: c.hazmat, lineas: c.lineas })),
-        }),
+      const json = Motor.optimizar(state.data, {
+        plaza: state.plaza, peso_costo: (100 - state.peso) / 100,
+        cargas: state.cargas.map(c => ({ ruta: c.ruta, tipo: c.tipo, cantidad: c.cantidad, hazmat: c.hazmat, lineas: c.lineas })),
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Error al calcular');
       renderResultados(json);
       state.hasResult = true;
       $('#results').classList.remove('stale');
       $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      mostrarError(err.message === 'Failed to fetch' ? 'No hay conexión con el programa. ¿Sigue abierta la ventana de app_web.py?' : err.message);
+      mostrarError(err.message || 'Error al calcular.');
     } finally {
       btn.disabled = false; btn.textContent = 'Calcular recomendación';
     }
@@ -543,9 +540,7 @@
   /* ---------------- Inicio ---------------- */
   async function cargarDatos() {
     try {
-      const res = await fetch('/api/datos');
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
+      const json = await Motor.cargarTarifas(ARCHIVO_TARIFAS);
       state.data = json;
       const plazas = Object.keys(json.plazas);
       if (!plazas.includes(state.plaza)) { state.plaza = plazas[0]; state.cargas = [nuevaCarga()]; }
@@ -555,10 +550,14 @@
       renderPlaza(); renderCargas();
     } catch (err) {
       $('#filePill').textContent = 'Error al leer tarifas';
-      mostrarError(err.message || 'No se pudieron cargar las tarifas.');
+      mostrarError(err.message === 'Failed to fetch'
+        ? `No se pudo abrir ${ARCHIVO_TARIFAS}. Revisa que esté en la misma carpeta que esta página.`
+        : (err.message || 'No se pudieron cargar las tarifas.'));
     }
   }
 
+  // Archivo de tarifas (debe estar en la misma carpeta que esta página)
+  const ARCHIVO_TARIFAS = 'Tarifas.xlsx';
   const pc0 = 50;
   $('#peso').value = pc0;
   cargarDatos();

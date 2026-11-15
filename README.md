@@ -2,7 +2,7 @@
 
 Programa que recomienda **qué línea transportista conviene para cada carga**, buscando el **menor costo** y la **mejor calificación** de la línea.
 
-Lee las tarifas y calificaciones del archivo `Tarifas.xlsx` y se usa desde el navegador, en tu propia computadora (`http://localhost:8000`).
+Lee las tarifas y calificaciones del archivo `Tarifas.xlsx` y se usa desde el navegador: en tu propia computadora (`http://localhost:8000`) o publicado en internet en tu hosting (ver [sección 9](#9-publicar-en-internet-hostgator)).
 
 ![Captura del programa](docs/captura.png)
 
@@ -18,6 +18,7 @@ Lee las tarifas y calificaciones del archivo `Tarifas.xlsx` y se usa desde el na
 6. [Cómo se calcula la recomendación](#6-cómo-se-calcula-la-recomendación)
 7. [Solución de problemas](#7-solución-de-problemas)
 8. [Archivos del proyecto](#8-archivos-del-proyecto)
+9. [Publicar en internet (HostGator)](#9-publicar-en-internet-hostgator)
 
 ---
 
@@ -259,8 +260,9 @@ Las cargas se asignan primero a la línea más eficiente. Si esa línea no puede
 | Problema | Solución |
 |---|---|
 | `No se encontró el archivo de tarifas` | Revisa que `Tarifas.xlsx` esté en la misma carpeta que `app_web.py`. |
-| La página dice "No hay conexión con el programa" | La ventana negra (o la Terminal) se cerró. Vuelve a abrir el programa. |
-| No aparece el logo | Revisa que exista `web/logo.png`. |
+| La página no carga o dice "No se pudo abrir Tarifas.xlsx" | En tu computadora: la ventana negra (o la Terminal) se cerró; vuelve a abrir el programa. En internet: revisa que `Tarifas.xlsx` esté en la misma carpeta que `index.html` y que se llame exactamente así (con T mayúscula). |
+| No aparece el logo | Revisa que `logo.png` esté junto a `index.html` (en tu computadora: `web/logo.png`). |
+| Al abrir `index.html` con doble clic no carga nada | La página no funciona abriéndola directo del disco. En tu computadora usa `app_web.py` (sección 3); en internet súbela al hosting (sección 9). |
 | El Excel no se actualiza | Guarda y **cierra** el Excel, luego presiona **Recargar** en la página. |
 
 ---
@@ -279,7 +281,108 @@ optimizador-cargas/
 ├── .gitignore
 ├── web/
 │   ├── index.html              ← interfaz
+│   ├── motor.js                ← lee el Excel y hace los cálculos en el navegador
 │   └── logo.png
+├── hosting/
+│   └── .htaccess               ← configuración para el hosting (sección 9)
 └── docs/
     └── captura.png
 ```
+
+La página (`web/index.html` + `web/motor.js`) hace todo el cálculo en el navegador leyendo directamente `Tarifas.xlsx`; `app_web.py` solo la sirve en tu computadora. Por eso la misma página funciona en local y en cualquier hosting. `optimizador_cargas.py` contiene la misma lógica en Python para la versión de consola.
+
+---
+
+## 9. Publicar en internet (HostGator)
+
+La página funciona como un **sitio estático**: el hosting no necesita Python ni nada especial, solo hay que subir 5 archivos.
+
+> **Importante: tus tarifas quedarán en internet.** Cualquier persona que conozca la dirección podría ver la página y descargar `Tarifas.xlsx`.
+> Sigue el **paso 5** para protegerla con usuario y contraseña. Además, la página indica a Google que no la muestre en sus resultados.
+
+### Paso 1: Juntar los archivos que se suben
+
+Crea en tu computadora una carpeta llamada `optimizador` y copia en ella **estos 5 archivos, todos sueltos (sin subcarpetas)**:
+
+| Archivo | Dónde está en el proyecto |
+|---|---|
+| `index.html` | carpeta `web` |
+| `motor.js` | carpeta `web` |
+| `logo.png` | carpeta `web` |
+| `Tarifas.xlsx` | carpeta principal |
+| `.htaccess` | carpeta `hosting` |
+
+> **`.htaccess` no se ve en Windows o Mac** porque empieza con punto (es un archivo oculto).
+> - **Windows:** en el Explorador de archivos, menú **Ver → Mostrar → Elementos ocultos**.
+> - **Mac:** en el Finder presiona **Cmd + Shift + .** (punto).
+>
+> Si no logras copiarlo, no pasa nada: puedes crearlo después directamente en el hosting (ver paso 4).
+
+### Paso 2: Entrar al Administrador de archivos de HostGator
+
+1. Entra a **https://cliente.hostgator.mx** con tu cuenta.
+2. En el menú de la izquierda haz clic en **Hospedajes**.
+3. En tu plan haz clic en **Administrar** y luego en **cPanel** (se abre en otra pestaña).
+4. En cPanel busca la sección **Archivos** y haz clic en **Administrador de archivos**.
+5. En la columna de la izquierda haz clic en la carpeta **`public_html`**. Todo lo que está ahí es lo que se ve en internet.
+
+> Si tienes varios dominios en el mismo plan, cada dominio adicional suele tener su propia carpeta (por ejemplo `public_html/otrodominio.com`). Entra a la carpeta del dominio que quieres usar.
+
+### Paso 3: Crear la carpeta y subir los archivos
+
+1. Dentro de `public_html`, haz clic en **+ Carpeta** (arriba a la izquierda), escribe `optimizador` y haz clic en **Create New Folder**.
+   Usar una carpeta propia evita que se borre o se reemplace la página que ya tengas en tu sitio.
+2. Haz doble clic en la carpeta **`optimizador`** para entrar.
+3. Haz clic en **Cargar** (Upload) y arrastra los 5 archivos del paso 1. Espera a que cada uno llegue a 100 % y regresa con el enlace **Go Back to "/home/…/public_html/optimizador"**.
+4. Revisa que dentro de `optimizador` estén `index.html`, `motor.js`, `logo.png` y `Tarifas.xlsx` (y `.htaccess`). Para ver `.htaccess` en el Administrador: **Configuración** (arriba a la derecha) → marca **Mostrar archivos ocultos (dotfiles)** → **Save**.
+
+### Paso 4 (solo si no subiste `.htaccess`)
+
+1. Dentro de la carpeta `optimizador`, haz clic en **+ Archivo**, escribe `.htaccess` y haz clic en **Create New File**.
+2. Haz clic derecho sobre `.htaccess` → **Edit** → **Edit**.
+3. Pega el contenido del archivo `hosting/.htaccess` de este proyecto y haz clic en **Save Changes**.
+
+### Paso 5: Proteger con usuario y contraseña (recomendado)
+
+1. Regresa a la página principal de **cPanel**.
+2. En la sección **Archivos** haz clic en **Privacidad de directorios** (Directory Privacy).
+3. Entra a `public_html` y haz clic en el nombre de la carpeta **`optimizador`** (o en **Editar**).
+4. Marca **Proteger este directorio con contraseña**, escribe un nombre (por ejemplo "Optimizador de Cargas") y haz clic en **Guardar**.
+5. En **Crear usuario**, escribe un usuario y una contraseña segura y haz clic en **Guardar**.
+   Puedes crear un usuario para cada persona que lo vaya a usar.
+
+### Paso 6: Abrir el programa en internet
+
+Entra desde cualquier navegador a:
+
+```
+https://tudominio.com/optimizador/
+```
+
+(cambia `tudominio.com` por tu dominio). Si hiciste el paso 5, te pedirá el usuario y la contraseña.
+
+> **¿Todavía no tienes dominio?** Necesitas uno conectado a tu plan de hospedaje para tener una dirección como la de arriba.
+> Puedes comprarlo en el **Portal del Cliente → Dominios → Nuevo dominio**, o usar uno que ya tengas en otro proveedor apuntando sus DNS a HostGator (en el mismo portal está la guía "¿Cuál es el DNS del hosting?").
+>
+> **El candado de seguridad (https):** si la dirección con `https://` muestra una advertencia, activa el certificado gratuito en **cPanel → Seguridad → SSL/TLS Status → Run AutoSSL** y espera unos minutos.
+
+### Actualizar las tarifas en internet
+
+1. Edita `Tarifas.xlsx` en tu computadora y guárdalo (mismo nombre).
+2. En el **Administrador de archivos**, entra a `public_html/optimizador`, haz clic en **Cargar** y sube el nuevo `Tarifas.xlsx`. Si pregunta, acepta **reemplazar** el archivo.
+3. En la página del optimizador haz clic en **Recargar**. Los cambios se ven de inmediato para todos.
+
+### Actualizar el programa
+
+Si en el futuro cambian `index.html`, `motor.js` o `logo.png` en este repositorio, súbelos de nuevo a `public_html/optimizador` reemplazando los anteriores, igual que con las tarifas.
+
+### Problemas comunes en el hosting
+
+| Problema | Solución |
+|---|---|
+| Sale **Error 500** (Internal Server Error) después de subir `.htaccess` | Edita `.htaccess` en el Administrador de archivos y borra la línea `Options -Indexes`. Si sigue igual, borra las líneas de `<IfModule mod_headers.c>` hasta `</IfModule>`. |
+| Sale **Error 404** (Not Found) | Revisa la dirección: debe terminar en `/optimizador/` y la carpeta debe llamarse exactamente `optimizador` (en minúsculas). |
+| Se ve la lista de archivos en vez del programa | Falta `index.html` en la carpeta, o tiene otro nombre (por ejemplo `index.html.txt`). |
+| La página abre pero dice "No se pudo abrir Tarifas.xlsx" | Sube `Tarifas.xlsx` a la misma carpeta que `index.html`. El nombre distingue mayúsculas: debe ser `Tarifas.xlsx`. |
+| Siguen saliendo las tarifas viejas | Revisa que el archivo sí se reemplazó (mira la fecha en el Administrador de archivos) y presiona **Recargar** en la página. |
+| La página no pide contraseña | Repite el paso 5 sobre la carpeta `optimizador` y prueba en una ventana de incógnito. |

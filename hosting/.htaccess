@@ -1,0 +1,19 @@
+# Configuración para publicar el Optimizador de Cargas en HostGator (Apache).
+# Sube este archivo a la misma carpeta que index.html.
+
+# No mostrar la lista de archivos de la carpeta
+Options -Indexes
+
+# Página principal
+DirectoryIndex index.html
+
+# Que el navegador siempre tome la versión más reciente de las tarifas y del programa
+<IfModule mod_headers.c>
+  <FilesMatch "\.(xlsx|js|html)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# La protección con usuario y contraseña se agrega desde cPanel:
+# "Privacidad de directorios" (Directory Privacy). cPanel escribe sus
+# propias líneas en este archivo; no las borres.
