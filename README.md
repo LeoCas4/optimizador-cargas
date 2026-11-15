@@ -275,6 +275,8 @@ optimizador-cargas/
 ├── optimizador_cargas.py       ← lógica de cálculo + versión de consola
 ├── Tarifas.xlsx                ← tarifas y calificaciones
 ├── requirements.txt            ← librerías necesarias (openpyxl)
+├── README.md                   ← este documento
+├── .gitignore
 ├── web/
 │   ├── index.html              ← interfaz
 │   └── logo.png
