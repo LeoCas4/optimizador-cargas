@@ -384,5 +384,6 @@ Si en el futuro cambian `index.html`, `motor.js` o `logo.png` en este repositori
 | Sale **Error 404** (Not Found) | Revisa la dirección: debe terminar en `/optimizador/` y la carpeta debe llamarse exactamente `optimizador` (en minúsculas). |
 | Se ve la lista de archivos en vez del programa | Falta `index.html` en la carpeta, o tiene otro nombre (por ejemplo `index.html.txt`). |
 | La página abre pero dice "No se pudo abrir Tarifas.xlsx" | Sube `Tarifas.xlsx` a la misma carpeta que `index.html`. El nombre distingue mayúsculas: debe ser `Tarifas.xlsx`. |
+| Dice "No se pudo descargar Tarifas.xlsx (error 403)" | El archivo no tiene permiso de lectura. En el Administrador de archivos, selecciona `Tarifas.xlsx` → **Permisos** → escribe `644` (o marca **Lectura** en Usuario, Grupo y Mundo) → **Change Permissions**. Recarga la página. |
 | Siguen saliendo las tarifas viejas | Revisa que el archivo sí se reemplazó (mira la fecha en el Administrador de archivos) y presiona **Recargar** en la página. |
 | La página no pide contraseña | Repite el paso 5 sobre la carpeta `optimizador` y prueba en una ventana de incógnito. |
